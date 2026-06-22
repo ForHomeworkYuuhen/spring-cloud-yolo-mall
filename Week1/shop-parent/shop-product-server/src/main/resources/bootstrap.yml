@@ -1,0 +1,27 @@
+# Day05 配置中心 Nacos Config
+# bootstrap.yml 优先级高于 application.yml，会在应用上下文初始化前加载，
+# 从而能在启动早期去 Nacos 拉取配置。
+#
+# 配置文件查找规则（DataID）：
+#   ${spring.application.name}-${spring.profiles.active}.${file-extension}
+#   => shop-product-service-dev.yaml
+# 同时还会加载（公共/共享配置）：
+#   shop-product-service.yaml      （同名无 profile，所有环境共享）
+#   global-config.yaml             （shared-configs 跨服务共享）
+#
+# 上述三个文件的内容见项目根目录 nacos-config/ 目录，需手动上传到 Nacos 控制台。
+# 若 Nacos 未启动或未上传配置，服务依旧能基于 application.yml 正常启动
+# （Controller 中的 @Value 均设置了默认值）。
+spring:
+  application:
+    name: shop-product-service
+  profiles:
+    active: dev   # 环境标识：dev / test / prod
+  cloud:
+    nacos:
+      config:
+        server-addr: 127.0.0.1:8848   # Nacos 配置中心地址
+        file-extension: yaml          # 配置文件格式
+        shared-configs:               # 跨微服务共享的配置
+          - data-id: global-config.yaml
+            refresh: true

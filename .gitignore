@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+runs/
+*.pt
+*.onnx
+*.whl
+
+# 数据集 / 训练产物 / 构建中间件
+archive/
+report_build/
+report_assets/
+train_oversampled.txt
+
+# Java 构建
+target/
+*.class
+.idea/
+*.iml
+
+# 文档导出 / 个人材料
+*.docx
+*.pdf
+
+# 系统
+.DS_Store
+Thumbs.db

@@ -1,0 +1,5 @@
+# Day05 9.5 配置共享 —— 跨微服务共享（通过 bootstrap.yml 的 shared-configs 引入）
+#   Data ID : global-config.yaml
+#   Group   : DEFAULT_GROUP
+#   格式     : YAML
+globalConfig: global

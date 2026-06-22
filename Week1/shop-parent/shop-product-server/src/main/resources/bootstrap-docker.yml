@@ -1,0 +1,6 @@
+# docker profile：配置中心地址改为 compose 服务名（覆盖 bootstrap.yml 中的 127.0.0.1）
+spring:
+  cloud:
+    nacos:
+      config:
+        server-addr: nacos:8848

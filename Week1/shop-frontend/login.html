@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 / 注册 · 粤海购</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="auth">
+  <div class="auth-card">
+    <a class="brand" href="index.html" style="text-align:center">粤海购<small>GDOU SHOP</small></a>
+    <div class="auth-tabs">
+      <div id="tabLogin" class="on" onclick="sw('login')">登录</div>
+      <div id="tabReg" onclick="sw('reg')">注册</div>
+    </div>
+
+    <div id="formLogin">
+      <div class="fld"><input id="lu" placeholder="用户名 / 手机号"></div>
+      <div class="fld"><input id="lp" type="password" placeholder="密码"></div>
+      <button class="btn" onclick="doLogin()">登 录</button>
+      <div class="tip">登录即同意《用户协议》与《隐私政策》</div>
+    </div>
+
+    <div id="formReg" style="display:none">
+      <div class="fld"><input id="ru" placeholder="用户名"></div>
+      <div class="fld"><input id="rphone" placeholder="手机号"></div>
+      <div class="fld"><input id="rp" type="password" placeholder="密码"></div>
+      <div class="fld"><input id="rp2" type="password" placeholder="确认密码"></div>
+      <button class="btn" onclick="doReg()">注 册</button>
+      <div class="tip">注册数据写入用户微服务（shop-user-server）</div>
+    </div>
+  </div>
+</div>
+<script src="js/app.js"></script>
+<script>
+function sw(t){const L=t==='login';tabLogin.className=L?'on':'';tabReg.className=L?'':'on';
+  formLogin.style.display=L?'block':'none';formReg.style.display=L?'none':'block';}
+
+async function doLogin(){
+  const username=lu.value.trim(), password=lp.value.trim();
+  if(!username||!password)return toast('请输入用户名和密码');
+  try{
+    const r=await fetch(`${GATEWAY}/user/login`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username,password}),signal:AbortSignal.timeout(2000)});
+    const d=await r.json();
+    if(d.code===0){ localStorage.setItem('user',username); localStorage.setItem('token',d.token||''); location.href='index.html'; }
+    else toast(d.message||'登录失败');
+  }catch(e){ // 后端未启动 → 本地降级
+    localStorage.setItem('user',username); toast('（用户服务未启动，本地登录）欢迎 '+username); location.href='index.html';
+  }
+}
+async function doReg(){
+  const username=ru.value.trim(), phone=rphone.value.trim(), password=rp.value.trim();
+  if(!username||!phone||!password)return toast('请填写完整');
+  if(password!==rp2.value.trim())return toast('两次密码不一致');
+  try{
+    const r=await fetch(`${GATEWAY}/user/register`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username,phone,password}),signal:AbortSignal.timeout(2000)});
+    const d=await r.json();
+    if(d.code===0){ localStorage.setItem('user',username); toast('注册成功，已登录'); location.href='index.html'; }
+    else toast(d.message||'注册失败');
+  }catch(e){ localStorage.setItem('user',username); toast('（用户服务未启动，本地注册）'); location.href='index.html'; }
+}
+</script>
+</body>
+</html>

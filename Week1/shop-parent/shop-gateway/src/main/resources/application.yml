@@ -1,0 +1,47 @@
+server:
+  port: 9000
+spring:
+  main:
+    web-application-type: reactive   # 网关基于 WebFlux，强制 reactive，避免引入 sentinel 后被误判为 servlet
+  application:
+    name: shop-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+    gateway:
+      discovery:
+        locator:
+          enabled: true   # 让 gateway 可以发现 nacos 中的微服务
+      routes:
+        # 商品服务路由：lb:// 负载均衡 + /admin/** 路径重写到 /**
+        - id: shop-product-service
+          uri: lb://shop-product-service
+          predicates:
+            - Path=/product/**,/admin/**
+          filters:
+            # /admin/xxx -> /xxx （$\ 是为了避免被当成 Spring 属性占位符解析）
+            - RewritePath=/admin/?(?<segment>.*), /$\{segment}
+        # 订单服务路由：附带自定义 Time 过滤器，打印请求耗时
+        - id: shop-order-service
+          uri: lb://shop-order-service
+          predicates:
+            - Path=/order/**
+          filters:
+            - Time=true
+        # 用户服务路由：登录/注册（公开接口，AuthGlobalFilter 已放行 /user/**）
+        - id: shop-user-service
+          uri: lb://shop-user-service
+          predicates:
+            - Path=/user/**
+    # Day04 7.9 网关集成 Sentinel 限流（transport 端口与 Sentinel 控制台地址）
+    sentinel:
+      transport:
+        port: 9999
+        dashboard: localhost:8080
+
+# 说明：本网关启用了全局鉴权过滤器 AuthGlobalFilter，
+# 所有经过网关的请求都必须携带 ?token=123，否则返回 401。
+# 例如：http://localhost:9000/product/hello?token=123
+#       http://localhost:9000/admin/product/hello?token=123
+#       http://localhost:9000/order/hi?token=123

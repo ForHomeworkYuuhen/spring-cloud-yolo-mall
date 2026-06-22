@@ -1,0 +1,24 @@
+train: E:/Code/Yueqian/yolo-snacks/train_oversampled.txt
+val: E:/Code/Yueqian/archive/Iranian Snack and Chips Detection (YOLO Format)/valid/images
+test: E:/Code/Yueqian/archive/Iranian Snack and Chips Detection (YOLO Format)/test/images
+nc: 19
+names:
+- Ashi Mashi snacks
+- Chee pellet ketchup
+- Chee pellet vinegar
+- Cheetoz chili chips
+- Cheetoz ketchup chips
+- Cheetoz onion and parsley chips
+- Cheetoz salty chips
+- Cheetoz snack 30g
+- Cheetoz snack 90g
+- Cheetoz vinegar chips
+- Cheetoz wheelsnack
+- Maz Maz ketchup chips
+- Maz Maz potato sticks
+- Maz Maz salty chips
+- Maz Maz vinegar chips
+- Mini Lina
+- Minoo cream biscuit
+- Naderi mini cookie
+- Naderi mini wafer

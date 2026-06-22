@@ -1,0 +1,21 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: shop-product-service
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql:///shop-product?serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: "12345"   # TODO 改成你自己的 MySQL 密码
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848   # Day01 Nacos 注册中心地址
+  # Day06 链路追踪
+  zipkin:
+    base-url: http://127.0.0.1:9411/  # zipkin server 地址
+    discovery-client-enabled: false   # 让 nacos 把它当成 URL，而不是服务名
+  sleuth:
+    sampler:
+      probability: 1.0                # 采样百分比，演示用 100%

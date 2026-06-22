@@ -1,0 +1,42 @@
+server:
+  port: 8091
+  # Day03 6.1：把 tomcat 最大并发数改小（如 10）可复现"服务雪崩雏形"压测效果，
+  # 平时演示其它功能时建议保持默认（不要打开下面这段）。
+  # tomcat:
+  #   threads:
+  #     max: 10
+spring:
+  application:
+    name: shop-order-service
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql:///shop-order?serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: "12345"   # TODO 改成你自己的 MySQL 密码
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848        # Day01 Nacos 注册中心
+    # Day03 Sentinel
+    sentinel:
+      transport:
+        port: 8719                         # 与控制台交流的端口（默认 8719）
+        dashboard: localhost:8080          # Sentinel 控制台地址
+      web-context-unify: false             # 6.8.2.3 链路流控需要关闭资源聚合
+  # Day06 链路追踪
+  zipkin:
+    base-url: http://127.0.0.1:9411/
+    discovery-client-enabled: false
+  sleuth:
+    sampler:
+      probability: 1.0
+
+# Day03 6.15 开启 Feign 对 Sentinel 的支持（fallback 容错才会生效）
+feign:
+  sentinel:
+    enabled: true
+
+# Day02 4.5 修改 Ribbon 负载均衡策略（默认轮询 RoundRobinRule，可改为 RandomRule 等）
+shop-product-service:
+  ribbon:
+    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RoundRobinRule

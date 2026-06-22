@@ -1,0 +1,7 @@
+# Day05 9.5 配置共享 —— 同一微服务所有环境共享（无 profile 后缀）
+#   Data ID : shop-product-service.yaml
+#   Group   : DEFAULT_GROUP
+#   格式     : YAML
+# dev / test / prod 各环境都会加载此文件中的公共配置。
+appConfig:
+  desc: 这是 shop-product-service 所有环境共享的公共配置

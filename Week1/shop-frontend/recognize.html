@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商品识别 — 粤海购</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="topbar"><div class="wrap">
+  <div>商品识别 · 拍照/上传识物</div>
+  <div><a href="index.html">返回首页</a></div>
+</div></div>
+
+<div class="wrap">
+  <a class="back" href="index.html">← 返回首页</a>
+  <div class="rec">
+    <div class="sec-title" style="margin-top:0">商品识别</div>
+    <p style="color:#999;margin-bottom:16px;font-size:13px">
+      上传一张商品图片，模型会框出并识别其中的商品。当前接 YOLO 推理服务（YOLO11s mAP50≈0.994，YOLO12x 已训练）。
+    </p>
+
+    <div class="model-pick" id="modelPick" role="group" aria-label="选择识别模型"></div>
+
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept="image/*" hidden>
+      <svg viewBox="0 0 24 24"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M5 20h14"/></svg>
+      <div>点击或拖拽图片到此上传</div>
+    </label>
+
+    <div class="canvas-wrap" id="canvasWrap" style="display:none">
+      <img id="preview" class="preview" alt="预览">
+      <canvas id="overlay" class="overlay"></canvas>
+    </div>
+
+    <button class="btn" id="btn" style="margin-top:16px;display:none" onclick="recognize()">开 始 识 别</button>
+
+    <div class="result" id="result"></div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+// 本地 YOLO 推理服务地址
+const RECO = "http://localhost:8123";
+
+// 兜底模型列表（拉取 /models 失败时使用）
+const FALLBACK_MODELS = [
+  { value: "11s_balanced", label: "YOLO11s·过采样 推荐", default: true },
+  { value: "11s_base",     label: "YOLO11s·原始" },
+  { value: "12x_balanced", label: "YOLO12x·过采样" },
+];
+
+const file = document.getElementById('file'), drop = document.getElementById('drop');
+const preview = document.getElementById('preview'), btn = document.getElementById('btn'), result = document.getElementById('result');
+const modelPick = document.getElementById('modelPick'), canvasWrap = document.getElementById('canvasWrap'), overlay = document.getElementById('overlay');
+let imgFile = null;
+let currentModel = FALLBACK_MODELS[0].value;
+let modelLabels = {};   // value -> 展示名，渲染汇总行时用
+let lastRender = null;  // 缓存最近一次结果，窗口缩放时按显示尺寸重画
+
+// ---- 模型选择器：默认从 RECO/models 拉取，失败用兜底 ----
+async function loadModels(){
+  let models = null;
+  try {
+    const r = await fetch(`${RECO}/models`, { signal: AbortSignal.timeout(3000) });
+    if(!r.ok) throw 0;
+    const data = await r.json();
+    // 兼容 {models:[...]} 或直接数组；元素可为字符串或 {value,label,default}
+    const arr = Array.isArray(data) ? data : (data.models || []);
+    if(arr.length){
+      models = arr.map(m => typeof m === 'string'
+        ? { value: m, label: m }
+        : { value: m.value || m.key || m.name || m.id, label: m.label || m.name || m.value || m.key, default: !!m.default });
+    }
+  } catch(e) { /* 服务未启动 → 兜底 */ }
+
+  if(!models || !models.length) models = FALLBACK_MODELS;
+
+  // 确定默认选中项
+  const def = models.find(m => m.default) || models[0];
+  currentModel = def.value;
+
+  modelPick.innerHTML = models.map(m =>
+    `<button type="button" class="seg${m.value === currentModel ? ' on' : ''}" data-val="${m.value}">${m.label}</button>`
+  ).join('');
+  modelLabels = {};
+  models.forEach(m => { modelLabels[m.value] = m.label; });
+
+  modelPick.querySelectorAll('.seg').forEach(b => {
+    b.onclick = () => {
+      currentModel = b.dataset.val;
+      modelPick.querySelectorAll('.seg').forEach(x => x.classList.toggle('on', x === b));
+      // 已选过图片则用新模型重新识别
+      if(imgFile) recognize();
+    };
+  });
+}
+loadModels();
+
+// ---- 选图 ----
+drop.onclick = () => file.click();
+file.onchange = e => { if (e.target.files[0]) show(e.target.files[0]); };
+drop.ondragover = e => { e.preventDefault(); };
+drop.ondrop = e => { e.preventDefault(); if (e.dataTransfer.files[0]) show(e.dataTransfer.files[0]); };
+
+function show(f){
+  imgFile = f;
+  lastRender = null;
+  preview.onload = () => { clearOverlay(); };
+  preview.src = URL.createObjectURL(f);
+  canvasWrap.style.display = 'inline-block';
+  btn.style.display = 'block';
+  result.innerHTML = '';
+}
+
+// ---- 识别 ----
+async function recognize(){
+  if(!imgFile){ return; }
+  result.innerHTML = '<p style="color:#999">识别中…</p>';
+  clearOverlay();
+  try {
+    const fd = new FormData();
+    fd.append('file', imgFile);
+    fd.append('model', currentModel);
+    const r = await fetch(`${RECO}/recognize`, { method:'POST', body: fd, signal: AbortSignal.timeout(8000) });
+    if(!r.ok) throw 0;
+    render(await r.json());
+  } catch(e) {
+    // 识别服务未就绪 → 演示用 mock 结果
+    toast("（识别服务未启动，显示示例结果）");
+    render({
+      model: currentModel,
+      device: "cpu",
+      infer_ms: 0,
+      image_w: preview.naturalWidth,
+      image_h: preview.naturalHeight,
+      detections: [
+        { name: "Cheetoz salty chips", conf: 0.97,
+          box: mockBox(preview.naturalWidth, preview.naturalHeight) },
+      ],
+    });
+  }
+}
+
+// 给 mock 检测一个居中的框（占图片中部 ~60%）
+function mockBox(w, h){
+  w = w || 640; h = h || 480;
+  return [w*0.2, h*0.2, w*0.8, h*0.8];
+}
+
+// ---- 渲染：汇总行 + 画框 + 置信度条 ----
+function render(data){
+  const dets = (data && data.detections) || [];
+  const imgW = (data && data.image_w) || preview.naturalWidth || 1;
+  const imgH = (data && data.image_h) || preview.naturalHeight || 1;
+
+  if(!dets.length){
+    clearOverlay();
+    result.innerHTML = '<p style="color:#999">未识别到商品</p>';
+    return;
+  }
+
+  lastRender = { dets, w: imgW, h: imgH };
+  drawBoxes(dets, imgW, imgH);
+
+  const label = modelLabels[data && data.model] || (data && data.model) || currentModel;
+  const device = (data && data.device) || '—';
+  const ms = (data && (data.infer_ms != null)) ? data.infer_ms : '—';
+  const summary = `<p class="reco-meta">模型: ${label} · 设备: ${device} · 用时 ${ms}ms · 共 ${dets.length} 个目标</p>`;
+
+  const rows = dets.map(d => {
+    const pct = ((d.conf || 0) * 100);
+    return `<div class="row"><b>${d.name}</b><span>${pct.toFixed(1)}%</span></div>
+      <div class="bar" style="width:${pct.toFixed(0)}%"></div>`;
+  }).join('');
+
+  result.innerHTML = summary + rows;
+}
+
+// ---- canvas 叠加画框 ----
+function clearOverlay(){
+  const ctx = overlay.getContext('2d');
+  ctx && ctx.clearRect(0, 0, overlay.width, overlay.height);
+}
+
+function boxOf(d){
+  // 兼容 box:[x1,y1,x2,y2] / xyxy / {x1,y1,x2,y2}
+  if(Array.isArray(d.box)) return d.box;
+  if(Array.isArray(d.xyxy)) return d.xyxy;
+  if(d.x1 != null) return [d.x1, d.y1, d.x2, d.y2];
+  return null;
+}
+
+function drawBoxes(dets, imgW, imgH){
+  // 让 canvas 像素尺寸 = 图片显示尺寸，再按 模型坐标系(imgW/imgH)→显示尺寸 缩放
+  const dispW = preview.clientWidth, dispH = preview.clientHeight;
+  if(!dispW || !dispH){ return; }
+  overlay.width = dispW;
+  overlay.height = dispH;
+  const sx = dispW / imgW, sy = dispH / imgH;
+
+  const ctx = overlay.getContext('2d');
+  ctx.clearRect(0, 0, dispW, dispH);
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#bb4a2c';
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = accent;
+  ctx.font = '600 13px -apple-system,"Microsoft YaHei",Arial,sans-serif';
+  ctx.textBaseline = 'top';
+
+  dets.forEach(d => {
+    const b = boxOf(d);
+    if(!b) return;
+    const x = b[0]*sx, y = b[1]*sy, w = (b[2]-b[0])*sx, h = (b[3]-b[1])*sy;
+    ctx.strokeRect(x, y, w, h);
+    // 左上角标签：name conf
+    const txt = `${d.name} ${(d.conf*100).toFixed(0)}%`;
+    const tw = ctx.measureText(txt).width;
+    const ty = y - 18 >= 0 ? y - 18 : y;   // 顶到边时放进框内
+    ctx.fillStyle = accent;
+    ctx.fillRect(x, ty, tw + 10, 18);
+    ctx.fillStyle = '#fff';
+    ctx.fillText(txt, x + 5, ty + 2);
+  });
+}
+
+// 窗口尺寸变化时，若已有结果则按当前显示尺寸重画
+window.addEventListener('resize', () => {
+  if(lastRender) drawBoxes(lastRender.dets, lastRender.w, lastRender.h);
+});
+</script>
+</body>
+</html>

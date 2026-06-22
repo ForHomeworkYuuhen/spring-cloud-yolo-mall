@@ -1,0 +1,9 @@
+# docker profile：容器内通过 compose 服务名互访（覆盖 application.yml 中的 localhost）
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos:8848
+    sentinel:
+      transport:
+        dashboard: sentinel-dashboard:8858
