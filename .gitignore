@@ -4,9 +4,11 @@ __pycache__/
 .venv/
 venv/
 runs/
-*.pt
-*.onnx
 *.whl
+
+# 大模型权重默认忽略，但放行仓库要带的部署模型（11s，~18MB）
+*.pt
+!yolo-snacks/models/snacks_11s_*.pt
 
 # 数据集 / 训练产物 / 构建中间件
 archive/

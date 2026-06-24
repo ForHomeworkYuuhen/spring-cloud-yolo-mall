@@ -1,6 +1,6 @@
-// 网关地址（Spring Cloud Gateway）。访问商品需带 token=123（Day04 全局鉴权）
+// 网关地址（Spring Cloud Gateway）。商品目录为公开接口，无需令牌；
+// 登录后服务端签发的 JWT 存 localStorage，下单等敏感操作才需带 Authorization: Bearer。
 const GATEWAY = "http://localhost:9000";
-const TOKEN = "123";
 
 // 与 t_product 一致的兜底数据（网关未启动时用）；图标用 emoji 占位
 const MOCK = [
@@ -21,7 +21,7 @@ async function fetchProducts() {
   const list = [];
   try {
     for (let id = 1; id <= 4; id++) {
-      const r = await fetch(`${GATEWAY}/admin/products/${id}?token=${TOKEN}`, { signal: AbortSignal.timeout(1500) });
+      const r = await fetch(`${GATEWAY}/admin/products/${id}`, { signal: AbortSignal.timeout(1500) });
       if (!r.ok) throw 0;
       const p = await r.json();
       const m = MOCK.find(x => x.id === p.id) || {};

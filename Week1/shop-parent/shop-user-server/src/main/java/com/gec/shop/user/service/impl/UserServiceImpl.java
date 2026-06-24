@@ -8,7 +8,6 @@ import com.gec.shop.user.service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,8 +35,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return r(0, "登录成功", token(db.getUsername()));
     }
 
+    /** 签发 JWT（HS256 签名 + 2 小时过期），替代原先可伪造的 Base64 令牌。 */
     private String token(String username) {
-        return Base64.getUrlEncoder().encodeToString((username + ":" + System.currentTimeMillis()).getBytes());
+        return com.gec.shop.user.util.JwtUtil.create(username);
     }
 
     private Map<String, Object> r(int code, String msg, String token) {

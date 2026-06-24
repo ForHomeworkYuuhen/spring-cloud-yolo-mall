@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """零食识别服务：基于 ultralytics YOLO 的多模型推理 HTTP 服务。"""
+import os
 import time
 from io import BytesIO
 
@@ -13,25 +14,28 @@ from ultralytics import YOLO
 # 设备选择：有 GPU 用 cuda:0，否则回退到 cpu
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-# 模型注册表：保持顺序，11s_balanced 在最前（部署默认）
+# 模型权重目录（相对脚本所在目录，换台电脑也能用）
+MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
+
+# 模型注册表：保持顺序，11s_balanced 在最前（部署默认）。权重文件不存在的会在启动时自动跳过。
 MODEL_CONFIG = [
     {
         "key": "11s_balanced",
-        "path": "E:/Code/Yueqian/yolo-snacks/runs/detect/runs/snacks_11s_balanced/weights/best.pt",
+        "path": os.path.join(MODELS_DIR, "snacks_11s_balanced.pt"),
         "label": "YOLO11s · 过采样（推荐）",
         "note": "9.4M参数·最快·部署默认",
     },
     {
         "key": "11s_base",
-        "path": "E:/Code/Yueqian/yolo-snacks/runs/detect/runs/snacks/weights/best.pt",
+        "path": os.path.join(MODELS_DIR, "snacks_11s_base.pt"),
         "label": "YOLO11s · 原始",
         "note": "未过采样·对照基线",
     },
     {
         "key": "12x_balanced",
-        "path": "E:/Code/Yueqian/yolo-snacks/runs/detect/runs/snacks_12x_balanced/weights/best.pt",
+        "path": os.path.join(MODELS_DIR, "snacks_12x_balanced.pt"),
         "label": "YOLO12x · 过采样",
-        "note": "59M参数·大模型对照",
+        "note": "59M参数·大模型对照（体积大，仓库未包含，可自行训练得到）",
     },
 ]
 
@@ -51,12 +55,17 @@ app.add_middleware(
 
 @app.on_event("startup")
 def load_models():
-    """启动时把所有模型加载进全局 MODELS，并绑定到目标设备。"""
+    """启动时把存在的模型加载进全局 MODELS；权重文件不存在的自动跳过。"""
     for cfg in MODEL_CONFIG:
+        if not os.path.exists(cfg["path"]):
+            print(f"[skip] {cfg['key']} 权重不存在，跳过: {cfg['path']}")
+            continue
         model = YOLO(cfg["path"])
         model.to(DEVICE)  # 统一放到选定设备
         MODELS[cfg["key"]] = model
         print(f"[load] {cfg['key']} -> {cfg['path']} ({DEVICE})")
+    if not MODELS:
+        print("[warn] 没有任何模型被加载！请把 best.pt 放到 models/ 目录（见 README）。")
 
 
 @app.get("/health")
@@ -67,8 +76,9 @@ def health():
 
 @app.get("/models")
 def list_models():
-    """返回模型元信息列表，保持注册顺序。"""
-    return [{"key": c["key"], "label": c["label"], "note": c["note"]} for c in MODEL_CONFIG]
+    """返回【已加载】模型的元信息列表，保持注册顺序（未加载的不返回）。"""
+    return [{"key": c["key"], "label": c["label"], "note": c["note"]}
+            for c in MODEL_CONFIG if c["key"] in MODELS]
 
 
 @app.post("/recognize")

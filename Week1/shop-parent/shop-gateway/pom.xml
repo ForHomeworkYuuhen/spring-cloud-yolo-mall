@@ -34,6 +34,12 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
+        <!-- 安全：JWT 验签（网关统一鉴权） -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
+        </dependency>
 
         <!-- Day04 7.9 网关集成 Sentinel 实现网关限流 -->
         <dependency>

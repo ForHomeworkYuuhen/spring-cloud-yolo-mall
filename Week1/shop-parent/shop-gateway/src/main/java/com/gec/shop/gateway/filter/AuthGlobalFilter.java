@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import com.gec.shop.gateway.util.JwtUtil;
 
 /**
  * Day04 7.8.2.3 自定义全局过滤器——网关统一鉴权。
@@ -24,27 +25,33 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        log.info("--前置 pre 逻辑--");
-
-        // 公开接口放行：登录/注册无需 token
         String path = exchange.getRequest().getURI().getPath();
-        if (path.startsWith("/user/")) {
+
+        // 公开路径放行：登录/注册 + 商品目录浏览（未登录也能逛）
+        if (path.startsWith("/user/") || path.startsWith("/product/") || path.startsWith("/admin/")) {
             return chain.filter(exchange);
         }
 
-        String token = exchange.getRequest().getQueryParams().getFirst("token");
-        if (token == null || !"123".equals(token)) {
-            log.warn("鉴权失败：缺少有效 token");
-            // 无权限：给出状态码并终止后续请求
+        // 其余（如下单 /order/**）必须携带有效 JWT
+        String token = resolveToken(exchange);
+        String username = (token == null) ? null : JwtUtil.verify(token);
+        if (username == null) {
+            log.warn("鉴权失败：JWT 缺失/无效/被篡改/已过期，path={}", path);
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
 
-        log.info("认证有效，放行");
-        return chain.filter(exchange).then(Mono.fromRunnable(() -> {
-            // post 后置逻辑
-            log.info("--后置 post 逻辑--");
-        }));
+        log.info("JWT 校验通过，用户={}，放行 {}", username, path);
+        return chain.filter(exchange);
+    }
+
+    /** 从 Authorization: Bearer xxx 请求头，或 ?token=xxx 查询参数中取出令牌。 */
+    private String resolveToken(ServerWebExchange exchange) {
+        String auth = exchange.getRequest().getHeaders().getFirst("Authorization");
+        if (auth != null && auth.startsWith("Bearer ")) {
+            return auth.substring(7);
+        }
+        return exchange.getRequest().getQueryParams().getFirst("token");
     }
 
     @Override
