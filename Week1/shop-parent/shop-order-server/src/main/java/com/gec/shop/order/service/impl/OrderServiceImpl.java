@@ -32,7 +32,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     private IProductFeginService productFeginService;
 
     @Override
-    public Order createOrder(Long pid, Long uid) {
+    public Order createOrder(Long pid, String username, Integer number) {
         Order order = new Order();
 
         // ---------- 商品信息的获取（5 种演进方案） ----------
@@ -60,16 +60,25 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         Product product = productFeginService.get(pid);
 
         order.setPid(pid);
-        order.setProductName(product.getName());
+        // 商品名去掉负载均衡实例标记（—端口）
+        String pname = product.getName();
+        if (pname != null && pname.contains("—")) pname = pname.substring(0, pname.indexOf("—"));
+        order.setProductName(pname);
         order.setProductPrice(product.getPrice());
 
-        // 用户信息（演示固定为 dafei）
-        order.setUid(uid == null ? 1L : uid);
-        order.setUsername("dafei");
-        order.setNumber(1);
+        // 用户信息：来自登录用户
+        order.setUid(0L);
+        order.setUsername(username == null || username.isEmpty() ? "guest" : username);
+        order.setNumber(number == null || number < 1 ? 1 : number);
 
         log.info("创建订单：{}", order);
         super.save(order);
         return order;
+    }
+
+    @Override
+    public java.util.List<Order> listByUser(String username) {
+        return list(new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Order>()
+                .eq("username", username).orderByDesc("id"));
     }
 }

@@ -9,4 +9,5 @@ import java.util.Map;
 public interface UserService extends IService<User> {
     Map<String, Object> register(User u);
     Map<String, Object> login(User u);
+    Map<String, Object> info(String authHeader);
 }

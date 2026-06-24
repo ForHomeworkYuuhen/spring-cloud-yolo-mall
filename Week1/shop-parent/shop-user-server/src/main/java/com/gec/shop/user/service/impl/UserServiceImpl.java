@@ -35,6 +35,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return r(0, "登录成功", token(db.getUsername()));
     }
 
+    @Override
+    public Map<String, Object> info(String auth) {
+        String token = (auth != null && auth.startsWith("Bearer ")) ? auth.substring(7) : null;
+        String username = (token == null) ? null : com.gec.shop.user.util.JwtUtil.verify(token);
+        if (username == null) return r(-1, "未登录或登录已过期", null);
+        User db = getOne(new QueryWrapper<User>().eq("username", username));
+        if (db == null) return r(-1, "用户不存在", null);
+        Map<String, Object> m = r(0, "ok", null);
+        m.put("username", db.getUsername());
+        m.put("nickname", db.getNickname());
+        m.put("phone", db.getPhone());
+        m.put("id", db.getId());
+        return m;
+    }
+
     /** 签发 JWT（HS256 签名 + 2 小时过期），替代原先可伪造的 Base64 令牌。 */
     private String token(String username) {
         return com.gec.shop.user.util.JwtUtil.create(username);

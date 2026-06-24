@@ -1,0 +1,9 @@
+torch 2.11.0+cu128
+cuda_available True
+cuda_runtime 12.8
+device NVIDIA GeForce RTX 5070 Ti Laptop GPU
+capability(本机算力) (12, 0)
+arch_list(torch支持的架构) ['sm_75', 'sm_80', 'sm_86', 'sm_90', 'sm_100', 'sm_120']
+alloc_ok 0.08s
+matmul_ok 0.08s sum=-17391.9
+==> GPU 计算正常

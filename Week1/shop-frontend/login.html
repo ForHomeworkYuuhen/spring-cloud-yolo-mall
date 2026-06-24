@@ -28,7 +28,7 @@
       <div class="fld"><input id="rp" type="password" placeholder="密码"></div>
       <div class="fld"><input id="rp2" type="password" placeholder="确认密码"></div>
       <button class="btn" onclick="doReg()">注 册</button>
-      <div class="tip">注册数据写入用户微服务（shop-user-server）</div>
+      <div class="tip">注册即同意《用户协议》与《隐私政策》</div>
     </div>
   </div>
 </div>
@@ -58,7 +58,7 @@ async function doReg(){
     const r=await fetch(`${GATEWAY}/user/register`,{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({username,phone,password}),signal:AbortSignal.timeout(2000)});
     const d=await r.json();
-    if(d.code===0){ localStorage.setItem('user',username); toast('注册成功，已登录'); location.href='index.html'; }
+    if(d.code===0){ localStorage.setItem('user',username); localStorage.setItem('token',d.token||''); toast('注册成功，已登录'); location.href='index.html'; }
     else toast(d.message||'注册失败');
   }catch(e){ localStorage.setItem('user',username); toast('（用户服务未启动，本地注册）'); location.href='index.html'; }
 }

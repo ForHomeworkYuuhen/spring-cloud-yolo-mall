@@ -1,0 +1,64 @@
+
+==== train: 452 张图 ====
+  cls 0  实例=  25  含该类图= 25  Ashi Mashi snacks
+  cls18  实例=  40  含该类图= 40  Naderi mini wafer
+  cls 5  实例=  47  含该类图= 47  Cheetoz onion and parsley chips
+  cls 8  实例=  47  含该类图= 43  Cheetoz snack 90g
+  cls 7  实例=  50  含该类图= 50  Cheetoz snack 30g
+  cls 3  实例=  52  含该类图= 50  Cheetoz chili chips
+  cls10  实例=  54  含该类图= 50  Cheetoz wheelsnack
+  cls 6  实例=  59  含该类图= 57  Cheetoz salty chips
+  cls17  实例=  61  含该类图= 57  Naderi mini cookie
+  cls13  实例=  65  含该类图= 65  Maz Maz salty chips
+  cls14  实例=  66  含该类图= 57  Maz Maz vinegar chips
+  cls 4  实例=  77  含该类图= 77  Cheetoz ketchup chips
+  cls 1  实例=  80  含该类图= 75  Chee pellet ketchup
+  cls 9  实例=  86  含该类图= 74  Cheetoz vinegar chips
+  cls 2  实例=  90  含该类图= 87  Chee pellet vinegar
+  cls16  实例=  91  含该类图= 84  Minoo cream biscuit
+  cls12  实例= 117  含该类图=106  Maz Maz potato sticks
+  cls15  实例= 167  含该类图=125  Mini Lina
+  cls11  实例= 177  含该类图=167  Maz Maz ketchup chips
+>>> 最多/最少实例: 177 / 25  (不均衡比 7.1x)
+
+==== valid: 91 张图 ====
+  cls 7  实例=   4  含该类图=  4  Cheetoz snack 30g
+  cls18  实例=   4  含该类图=  4  Naderi mini wafer
+  cls 3  实例=   5  含该类图=  5  Cheetoz chili chips
+  cls 6  实例=   6  含该类图=  6  Cheetoz salty chips
+  cls 0  实例=  10  含该类图= 10  Ashi Mashi snacks
+  cls13  实例=  13  含该类图= 13  Maz Maz salty chips
+  cls 5  实例=  14  含该类图= 14  Cheetoz onion and parsley chips
+  cls 8  实例=  14  含该类图= 12  Cheetoz snack 90g
+  cls 9  实例=  14  含该类图= 10  Cheetoz vinegar chips
+  cls14  实例=  14  含该类图= 11  Maz Maz vinegar chips
+  cls10  实例=  16  含该类图= 14  Cheetoz wheelsnack
+  cls16  实例=  16  含该类图= 14  Minoo cream biscuit
+  cls17  实例=  16  含该类图= 13  Naderi mini cookie
+  cls 4  实例=  18  含该类图= 18  Cheetoz ketchup chips
+  cls 2  实例=  20  含该类图= 19  Chee pellet vinegar
+  cls 1  实例=  23  含该类图= 21  Chee pellet ketchup
+  cls12  实例=  26  含该类图= 24  Maz Maz potato sticks
+  cls11  实例=  31  含该类图= 29  Maz Maz ketchup chips
+  cls15  实例=  40  含该类图= 25  Mini Lina
+
+==== test: 60 张图 ====
+  cls 5  实例=   2  含该类图=  2  Cheetoz onion and parsley chips
+  cls 0  实例=   4  含该类图=  3  Ashi Mashi snacks
+  cls 3  实例=   5  含该类图=  5  Cheetoz chili chips
+  cls 8  实例=   5  含该类图=  5  Cheetoz snack 90g
+  cls18  实例=   5  含该类图=  5  Naderi mini wafer
+  cls 6  实例=   6  含该类图=  6  Cheetoz salty chips
+  cls 9  实例=   6  含该类图=  5  Cheetoz vinegar chips
+  cls 7  实例=   7  含该类图=  7  Cheetoz snack 30g
+  cls17  实例=   7  含该类图=  6  Naderi mini cookie
+  cls13  实例=   9  含该类图=  8  Maz Maz salty chips
+  cls 1  实例=  11  含该类图=  9  Chee pellet ketchup
+  cls 4  实例=  11  含该类图= 11  Cheetoz ketchup chips
+  cls14  实例=  11  含该类图= 11  Maz Maz vinegar chips
+  cls10  实例=  12  含该类图= 10  Cheetoz wheelsnack
+  cls12  实例=  13  含该类图= 12  Maz Maz potato sticks
+  cls16  实例=  13  含该类图= 12  Minoo cream biscuit
+  cls 2  实例=  14  含该类图= 13  Chee pellet vinegar
+  cls15  实例=  26  含该类图= 16  Mini Lina
+  cls11  实例=  28  含该类图= 25  Maz Maz ketchup chips

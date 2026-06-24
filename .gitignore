@@ -29,3 +29,6 @@ target/
 # 系统
 .DS_Store
 Thumbs.db
+
+.llm_key
+**/.llm_key

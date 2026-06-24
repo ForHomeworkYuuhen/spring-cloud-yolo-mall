@@ -11,5 +11,7 @@ public interface OrderService extends IService<Order> {
      * @param pid 商品 id
      * @param uid 用户 id
      */
-    Order createOrder(Long pid, Long uid);
+    Order createOrder(Long pid, String username, Integer number);
+
+    java.util.List<Order> listByUser(String username);
 }

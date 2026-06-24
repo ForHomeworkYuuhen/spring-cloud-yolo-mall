@@ -5,3 +5,9 @@
 # dev / test / prod 各环境都会加载此文件中的公共配置。
 appConfig:
   desc: 这是 shop-product-service 所有环境共享的公共配置
+
+# 商品识别：算法层 AI 服务地址（应用层从 Nacos 读取，配合 @RefreshScope 动态刷新）
+# 容器内访问宿主机算法服务用 host.docker.internal；非 docker 同机用 localhost
+reco:
+  service:
+    url: http://host.docker.internal:8123

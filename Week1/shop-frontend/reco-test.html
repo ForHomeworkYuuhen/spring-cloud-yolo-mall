@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>热门推荐 · 推荐测试 — 粤海购</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <div id="userArea">请 <a class="hi" href="login.html">登录</a> / <a href="login.html">注册</a></div>
+  <div><a href="reco-test.html">热门推荐</a><a href="orders.html">我的订单</a><a href="cart.html">购物车</a></div>
+</div></div>
+
+<header class="header"><div class="wrap">
+  <a class="brand" href="index.html">粤海购<small>GDOU SHOP</small></a>
+  <nav class="nav"><a href="index.html">首页</a><a href="index.html#all">全部商品</a></nav>
+</div></header>
+
+<div class="wrap">
+  <a class="back" href="index.html">← 返回首页</a>
+  <section class="sec" style="margin-top:8px">
+    <div class="eyebrow">RECOMMENDATION TEST</div>
+    <h2>热门推荐 · 推荐测试</h2>
+    <div class="note">随机抽取一位真实用户，根据其历史行为偏好，为他推荐本店零食。每次抽取的用户不同，推荐结果也不同——这就是“千人千面”。</div>
+  </section>
+
+  <div class="test-actions">
+    <button class="btn" id="pick" onclick="pickUser()">随机抽取一位用户并推荐</button>
+    <span class="test-hint" id="hint"></span>
+  </div>
+
+  <div id="userBox"></div>
+  <div class="grid" id="recoGrid" style="margin-top:8px"></div>
+</div>
+
+<footer>粤海购 · 广东海洋大学23级信管实训</footer>
+
+<script src="js/app.js"></script>
+<script>
+let CATALOG = [];
+async function pickUser(){
+  const hint = document.getElementById('hint');
+  const btn = document.getElementById('pick');
+  hint.textContent = '抽取中…'; btn.disabled = true;
+  try {
+    const r = await fetch(`${REC_API}/demo?n=8`, { signal: AbortSignal.timeout(4000) });
+    if(!r.ok) throw 0;
+    renderResult(await r.json());
+    hint.textContent = '';
+  } catch(e){
+    hint.textContent = '推荐服务(:8124)未启动，无法获取真实用户数据。';
+  } finally {
+    btn.disabled = false;
+  }
+}
+function renderResult(d){
+  const byId = Object.fromEntries(CATALOG.map(p => [p.id, p]));
+  const recs = (d.item_ids || []).map(id => byId[id]).filter(Boolean);
+  document.getElementById('userBox').innerHTML =
+    `<div class="test-user">
+       <div class="tu-id">用户 <b>#${d.user_id}</b></div>
+       <div class="tu-meta">历史行为覆盖 ${d.profile_categories || 0} 个商品类目 · 依据该用户真实的浏览 / 收藏 / 加购 / 购买偏好推荐</div>
+     </div>`;
+  document.getElementById('recoGrid').innerHTML = recs.map(cardHTML).join('');
+}
+(async function(){
+  renderUser();
+  CATALOG = await fetchProducts();
+  pickUser();
+})();
+</script>
+</body>
+</html>

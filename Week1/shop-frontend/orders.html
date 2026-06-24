@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的订单 — 粤海购</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <div id="userArea">请 <a class="hi" href="login.html">登录</a> / <a href="login.html">注册</a></div>
+  <div><a href="reco-test.html">热门推荐</a><a href="orders.html">我的订单</a><a href="cart.html">购物车</a></div>
+</div></div>
+
+<header class="header"><div class="wrap">
+  <a class="brand" href="index.html">粤海购<small>GDOU SHOP</small></a>
+  <nav class="nav"><a href="index.html">首页</a><a href="index.html#all">全部商品</a></nav>
+</div></header>
+
+<div class="wrap">
+  <a class="back" href="index.html">← 返回首页</a>
+  <section class="sec" style="margin-top:8px"><div class="eyebrow">ORDERS</div><h2>我的订单</h2></section>
+  <div id="ordersBox"></div>
+</div>
+
+<footer>粤海购 · 广东海洋大学23级信管实训</footer>
+
+<script src="js/app.js"></script>
+<script>
+function orderCard(o){
+  const lines = o.items.map(it =>
+    `<div class="line-item"><div class="li-name"><b>${it.name || '商品'}</b><small>数量 x${it.qty}</small></div><div class="li-price">¥${Number(it.price).toFixed(2)}</div></div>`).join('');
+  return `<div class="order-card"><div class="oc-head"><span>订单号 ${o.no}</span><span>已下单</span></div>${lines}
+    <div class="cart-foot" style="margin-top:12px"><div class="total">实付<b>¥${Number(o.total).toFixed(2)}</b></div></div></div>`;
+}
+async function load(){
+  renderUser();
+  const u = currentUser();
+  if(!u){
+    document.getElementById('ordersBox').innerHTML =
+      '<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><div class="es-title">请先登录</div><div class="es-sub">登录后即可查看你的订单</div><a class="cta" href="login.html">去登录</a></div>';
+    return;
+  }
+  let orders = [];
+  // 优先读真实订单微服务（携带 JWT）
+  try {
+    const r = await fetch(`${GATEWAY}/orders/list?username=${encodeURIComponent(u)}`,
+      { headers: { Authorization: 'Bearer ' + token() }, signal: AbortSignal.timeout(2500) });
+    if(r.ok){
+      const d = await r.json();
+      if(Array.isArray(d)) orders = d.map(o => ({
+        no: '#' + o.id, total: (o.productPrice || 0) * (o.number || 1),
+        items: [{ name: o.productName, price: o.productPrice, qty: o.number }],
+      }));
+    }
+  } catch(e){}
+  // 兜底：本地订单
+  if(!orders.length) orders = JSON.parse(localStorage.getItem('orders') || '[]');
+  if(!orders.length){
+    document.getElementById('ordersBox').innerHTML =
+      '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg><div class="es-title">暂无订单</div><div class="es-sub">你还没有下过单，去挑点零食吧～</div><a class="cta" href="index.html#all">去逛逛</a></div>';
+    return;
+  }
+  document.getElementById('ordersBox').innerHTML = orders.map(orderCard).join('');
+}
+load();
+</script>
+</body>
+</html>

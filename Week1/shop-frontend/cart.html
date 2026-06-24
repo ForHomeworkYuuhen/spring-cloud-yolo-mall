@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>购物车 — 粤海购</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <div id="userArea">请 <a class="hi" href="login.html">登录</a> / <a href="login.html">注册</a></div>
+  <div><a href="reco-test.html">热门推荐</a><a href="orders.html">我的订单</a><a href="cart.html">购物车</a></div>
+</div></div>
+
+<header class="header"><div class="wrap">
+  <a class="brand" href="index.html">粤海购<small>GDOU SHOP</small></a>
+  <nav class="nav"><a href="index.html">首页</a><a href="index.html#all">全部商品</a></nav>
+</div></header>
+
+<div class="wrap">
+  <a class="back" href="index.html">← 继续购物</a>
+  <section class="sec" style="margin-top:8px"><div class="eyebrow">CART</div><h2>购物车</h2></section>
+  <div id="cartBox"></div>
+</div>
+
+<footer>粤海购 · 广东海洋大学23级信管实训</footer>
+
+<script src="js/app.js"></script>
+<script>
+let CATALOG = [];
+async function load(){ renderUser(); CATALOG = await fetchProducts(); render(); }
+function emptyCart(){
+  return '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M3 5h2l2.5 12h11l2-8H7"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg><div class="es-title">购物车还是空的</div><div class="es-sub">挑点喜欢的零食，加进来吧～</div><a class="cta" href="index.html#all">去逛逛</a></div>';
+}
+function render(){
+  const cart = getCart(), box = document.getElementById('cartBox');
+  if(!cart.length){ box.innerHTML = emptyCart(); return; }
+  const byId = Object.fromEntries(CATALOG.map(p => [p.id, p]));
+  let total = 0;
+  const rows = cart.map(it => {
+    const p = byId[it.id]; if(!p) return '';
+    total += p.price * it.qty;
+    return `<div class="line-item">
+      <div class="li-img">${p.emoji || '🍪'}</div>
+      <div class="li-name"><b>${p.name}</b><small>${p.shop || ''}</small></div>
+      <div class="li-price">¥${p.price.toFixed(2)}</div>
+      <div class="li-qty"><button onclick="chg(${it.id},-1)">−</button><span>${it.qty}</span><button onclick="chg(${it.id},1)">+</button></div>
+      <div class="li-del" onclick="del(${it.id})">删除</div>
+    </div>`;
+  }).join('');
+  box.innerHTML = rows + `<div class="cart-foot"><div class="total">合计<b>¥${total.toFixed(2)}</b></div><button class="btn" onclick="checkout()">去结算</button></div>`;
+}
+function chg(id, d){ const c = getCart(), it = c.find(x => x.id === id); if(!it) return; it.qty = Math.max(1, it.qty + d); saveCart(c); render(); }
+function del(id){ saveCart(getCart().filter(x => x.id !== id)); render(); }
+async function checkout(){
+  const u = currentUser();
+  if(!u){ toast('请先登录后结算'); setTimeout(() => location.href = 'login.html', 800); return; }
+  const cart = getCart(); if(!cart.length) return;
+  const byId = Object.fromEntries(CATALOG.map(p => [p.id, p]));
+  // 优先走真实订单微服务（携带 JWT，受网关鉴权保护）
+  let backendOk = true;
+  for(const it of cart){
+    try {
+      const r = await fetch(`${GATEWAY}/orders/save?pid=${it.id}&username=${encodeURIComponent(u)}&number=${it.qty}`,
+        { headers: { Authorization: 'Bearer ' + token() }, signal: AbortSignal.timeout(3500) });
+      if(!r.ok) throw 0;
+    } catch(e){ backendOk = false; break; }
+  }
+  if(!backendOk){
+    // 兜底：订单服务未就绪时本地记录，保证下单流程可用
+    const items = cart.map(it => ({ id: it.id, name: (byId[it.id]||{}).name, price: (byId[it.id]||{}).price || 0, qty: it.qty }));
+    const total = items.reduce((s, x) => s + x.price * x.qty, 0);
+    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+    orders.unshift({ no: 'D' + Date.now(), items, total });
+    localStorage.setItem('orders', JSON.stringify(orders));
+  }
+  localStorage.removeItem('cart'); updateCartBadge();
+  toast('下单成功', 'ok');
+  setTimeout(() => location.href = 'orders.html', 800);
+}
+load();
+</script>
+</body>
+</html>

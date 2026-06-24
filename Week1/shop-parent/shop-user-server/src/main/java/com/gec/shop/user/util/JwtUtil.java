@@ -1,5 +1,6 @@
 package com.gec.shop.user.util;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
@@ -26,5 +27,15 @@ public class JwtUtil {
                 .setExpiration(new Date(now + EXPIRE_MS))
                 .signWith(SignatureAlgorithm.HS256, SECRET)
                 .compact();
+    }
+
+    /** 校验 JWT，返回用户名（subject）；无效 / 过期 / 被篡改返回 null。 */
+    public static String verify(String token) {
+        try {
+            Claims c = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token).getBody();
+            return c.getSubject();
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

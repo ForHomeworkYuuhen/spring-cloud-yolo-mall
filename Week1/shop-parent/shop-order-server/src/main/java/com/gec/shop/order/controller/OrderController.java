@@ -17,8 +17,13 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    @GetMapping("/save")  // 测试方便，使用 Get 方式
-    public Order order(Long pid, Long uid) {
-        return orderService.createOrder(pid, uid);
+    @GetMapping("/save")  // 下单：前端结算时按商品逐个调用
+    public Order order(Long pid, String username, Integer number) {
+        return orderService.createOrder(pid, username, number);
+    }
+
+    @GetMapping("/list")  // 我的订单：按用户名查询
+    public java.util.List<Order> list(String username) {
+        return orderService.listByUser(username);
     }
 }

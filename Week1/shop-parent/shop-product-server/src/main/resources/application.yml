@@ -3,6 +3,10 @@ server:
 spring:
   application:
     name: shop-product-service
+  servlet:
+    multipart:                # 商品识别上传图片，放宽单文件大小限制
+      max-file-size: 10MB
+      max-request-size: 10MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql:///shop-product?serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8

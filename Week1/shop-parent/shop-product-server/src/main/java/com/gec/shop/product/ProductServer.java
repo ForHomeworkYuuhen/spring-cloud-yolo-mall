@@ -16,4 +16,10 @@ public class ProductServer {
     public static void main(String[] args) {
         SpringApplication.run(ProductServer.class, args);
     }
+
+    /** 用于把上传的图片转发给算法层 AI 服务（直连，非 lb——AI 服务不在 Nacos）。 */
+    @org.springframework.context.annotation.Bean
+    public org.springframework.web.client.RestTemplate restTemplate() {
+        return new org.springframework.web.client.RestTemplate();
+    }
 }

@@ -28,7 +28,8 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
         String path = exchange.getRequest().getURI().getPath();
 
         // 公开路径放行：登录/注册 + 商品目录浏览（未登录也能逛）
-        if (path.startsWith("/user/") || path.startsWith("/product/") || path.startsWith("/admin/")) {
+        if (path.startsWith("/user/") || path.startsWith("/product/")
+                || path.startsWith("/admin/") || path.startsWith("/reco/")) {
             return chain.filter(exchange);
         }
 

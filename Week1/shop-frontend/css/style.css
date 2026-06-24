@@ -29,12 +29,17 @@ svg{display:block}
 /* 搜索（贴合整体编辑风：直角细框 + 墨黑按钮，聚焦/hover 才用陶土色点缀） */
 .searchbar{border-bottom:1px solid var(--line);padding:18px 0}
 .searchbar .wrap{display:flex}
-.searchbox{display:flex;align-items:center;width:100%;height:48px;border:1px solid var(--ink);border-radius:2px;background:#fff;overflow:hidden;transition:.15s}
+.searchrow{display:flex;gap:14px;width:100%;align-items:stretch}
+.searchbox{display:flex;align-items:center;flex:1;min-width:0;height:48px;border:1px solid var(--ink);border-radius:2px;background:#fff;overflow:hidden;transition:.15s}
 .searchbox:focus-within{border-color:var(--accent)}
 .searchbox .s-ic{width:18px;height:18px;stroke:var(--muted);stroke-width:1.6;fill:none;flex:none;margin-left:14px}
 .searchbox input{flex:1;min-width:0;height:100%;border:0;outline:0;font-size:14px;background:transparent;padding:0 12px;color:var(--ink)}
 .s-btn{flex:none;align-self:stretch;padding:0 30px;border:0;background:var(--ink);color:#fff;font-size:14px;letter-spacing:4px;cursor:pointer;transition:.15s}
 .s-btn:hover{background:var(--accent)}
+/* 搜索框右侧 · 商品识别入口按钮 */
+.reco-btn{flex:none;display:flex;align-items:center;gap:8px;padding:0 24px;height:48px;background:var(--accent);color:#fff;border:1px solid var(--accent);border-radius:2px;font-size:14px;font-weight:500;cursor:pointer;transition:.15s;white-space:nowrap}
+.reco-btn:hover{background:#a23f23;border-color:#a23f23}
+.reco-btn svg{width:18px;height:18px;stroke:#fff;stroke-width:1.6;fill:none}
 
 /* 两个入口 */
 .entries{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:34px 0}
@@ -145,3 +150,136 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:34px 0;text-alig
 
 /* 商品识别 · 结果汇总行 */
 .result .reco-meta{font-size:12.5px;color:var(--muted);margin-bottom:14px;letter-spacing:.2px}
+
+/* AI 客服 · 悬浮聊天窗 */
+.chat-fab{position:fixed;right:24px;bottom:24px;width:54px;height:54px;border-radius:50%;
+  background:var(--accent);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 6px 20px rgba(0,0,0,.22);z-index:1000;transition:transform .15s}
+.chat-fab:hover{transform:scale(1.06)}
+.chat-fab svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2}
+.chat-panel{position:fixed;right:24px;bottom:90px;width:340px;max-width:calc(100vw - 32px);
+  height:460px;max-height:72vh;background:var(--bg);border:1px solid var(--ink);border-radius:6px;
+  box-shadow:0 14px 44px rgba(0,0,0,.24);display:none;flex-direction:column;overflow:hidden;z-index:1000}
+.chat-panel.on{display:flex}
+.chat-head{background:var(--accent);color:#fff;padding:12px 14px;font-weight:600;font-size:14px;
+  display:flex;justify-content:space-between;align-items:center}
+.chat-head small{font-weight:400;opacity:.85;font-size:11px}
+.chat-close{cursor:pointer;font-size:20px;line-height:1}
+.chat-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--bg2)}
+.chat-body .msg{max-width:82%;padding:8px 11px;border-radius:10px;font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.chat-body .msg.bot{background:var(--bg);border:1px solid var(--line);align-self:flex-start;border-top-left-radius:2px}
+.chat-body .msg.me{background:var(--accent);color:#fff;align-self:flex-end;border-top-right-radius:2px}
+.chat-quick{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 10px;background:var(--bg2)}
+.chat-quick span{font-size:12px;color:var(--accent);border:1px solid var(--accent);border-radius:14px;
+  padding:3px 10px;cursor:pointer;background:var(--bg)}
+.chat-input{display:flex;border-top:1px solid var(--line);padding:8px;gap:6px;background:var(--bg)}
+.chat-input input{flex:1;border:1px solid var(--line);border-radius:4px;padding:8px;font-size:13px;outline:none}
+.chat-input input:focus{border-color:var(--accent)}
+.chat-input button{background:var(--accent);color:#fff;border:none;border-radius:4px;padding:0 14px;cursor:pointer;font-size:13px}
+
+/* 推荐测试页 · 用户卡片 */
+.test-user{background:var(--bg2);border:1px solid var(--line);border-radius:3px;padding:22px 26px;margin:22px 0;display:flex;flex-wrap:wrap;align-items:center;gap:10px 26px}
+.test-user .tu-id{font-size:18px;font-weight:600}
+.test-user .tu-id b{color:var(--accent)}
+.test-user .tu-meta{font-size:13px;color:var(--muted)}
+.test-user .tu-tags{display:flex;flex-wrap:wrap;gap:6px}
+.test-user .tu-tags span{font-size:12px;color:var(--accent);border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:2px 10px}
+.test-actions{display:flex;gap:14px;align-items:center;margin-top:18px}
+.test-actions .btn{width:auto;padding:0 30px;letter-spacing:2px}
+.test-hint{font-size:13px;color:var(--muted)}
+
+/* 空状态（购物车 / 订单） */
+.empty-state{text-align:center;padding:96px 20px}
+.empty-state svg{width:62px;height:62px;stroke:#d4cdc2;stroke-width:1.2;fill:none;margin-bottom:18px}
+.empty-state .es-title{font-size:18px;color:var(--ink);margin-bottom:8px}
+.empty-state .es-sub{font-size:13.5px;color:var(--muted);margin-bottom:24px}
+.empty-state .cta{display:inline-block;background:var(--accent);color:#fff;padding:11px 28px;border-radius:2px;font-size:14px}
+.empty-state .cta:hover{background:#a23f23}
+
+/* 商品卡 · 加入购物车 + emoji 占位 */
+.card{display:flex;flex-direction:column}
+.card-link{display:block;flex:1}
+.card .ph .emoji{font-size:60px;line-height:1}
+.add-btn{margin-top:10px;width:100%;height:38px;border:1px solid var(--ink);background:var(--bg);color:var(--ink);border-radius:2px;font-size:13px;cursor:pointer;transition:.15s}
+.add-btn:hover{background:var(--ink);color:#fff}
+
+/* 头部购物车角标 */
+.cart-wrap{position:relative;display:inline-flex}
+.cart-badge{position:absolute;top:-7px;right:-9px;min-width:16px;height:16px;padding:0 4px;background:var(--accent);color:#fff;font-size:11px;line-height:16px;text-align:center;border-radius:9px}
+
+/* 商品详情页 */
+.pd{display:grid;grid-template-columns:420px 1fr;gap:46px;margin:28px 0 10px;align-items:start}
+.pd-img{aspect-ratio:1/1;background:var(--bg2);border-radius:4px;display:flex;align-items:center;justify-content:center}
+.pd-img .emoji{font-size:150px;line-height:1}
+.pd-info h1{font-family:var(--serif);font-size:30px;font-weight:500;line-height:1.3}
+.pd-shop{color:var(--muted);font-size:13px;margin-top:8px}
+.pd-price{color:var(--accent);font-size:34px;font-weight:600;margin:22px 0}
+.pd-price small{font-size:18px}
+.pd-meta{font-size:13.5px;color:var(--muted);line-height:2;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0;margin-bottom:24px}
+.pd-meta b{color:var(--ink);font-weight:500;margin-right:6px}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:2px;margin-bottom:22px}
+.qty button{width:38px;height:40px;border:0;background:var(--bg);font-size:18px;cursor:pointer;color:var(--ink)}
+.qty input{width:54px;height:40px;border:0;border-left:1px solid var(--line);border-right:1px solid var(--line);text-align:center;font-size:15px;outline:0}
+.pd-actions{display:flex;gap:14px}
+.pd-actions .btn{width:auto;padding:0 40px;letter-spacing:2px}
+.btn.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:#fff}
+
+/* 个人资料页 */
+.profile-card{max-width:560px;border:1px solid var(--line);border-radius:4px;padding:32px 36px;margin:24px 0}
+.profile-card .pc-avatar{width:64px;height:64px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-family:var(--serif);margin-bottom:18px}
+.profile-card .pc-row{display:flex;justify-content:space-between;padding:14px 0;border-top:1px solid var(--line);font-size:14px}
+.profile-card .pc-row span{color:var(--muted)}
+.profile-card .pc-links{display:flex;gap:14px;margin-top:24px;flex-wrap:wrap}
+
+/* 购物车 / 订单 列表行 */
+.line-item{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--line)}
+.line-item .li-img{width:58px;height:58px;flex:none;background:var(--bg2);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:30px}
+.line-item .li-name{flex:1;min-width:0}
+.line-item .li-name b{font-weight:500}
+.line-item .li-name small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.line-item .li-price{color:var(--accent);font-weight:600;width:84px;text-align:right}
+.line-item .li-qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:2px}
+.line-item .li-qty button{width:30px;height:30px;border:0;background:var(--bg);cursor:pointer;font-size:15px}
+.line-item .li-qty span{width:34px;text-align:center;font-size:14px}
+.line-item .li-del{color:var(--muted);cursor:pointer;font-size:13px}
+.line-item .li-del:hover{color:var(--accent)}
+.cart-foot{display:flex;justify-content:flex-end;align-items:center;gap:24px;margin-top:24px}
+.cart-foot .total{font-size:15px}
+.cart-foot .total b{color:var(--accent);font-size:24px;margin-left:6px}
+.cart-foot .btn{width:auto;padding:0 44px}
+.order-card{border:1px solid var(--line);border-radius:4px;padding:18px 22px;margin-bottom:14px}
+.order-card .oc-head{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:10px}
+
+/* 商品识别 · 新布局 */
+.reco2{display:grid;grid-template-columns:1.25fr 1fr;gap:34px;align-items:start;margin:22px 0 10px}
+.reco2-left{min-width:0}
+.reco2-stage{border:1px solid var(--line);border-radius:6px;background:var(--bg2);min-height:400px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:16px}
+.reco2-stage .drop{border:1.5px dashed #d8d3c9;background:transparent;width:100%;min-height:368px}
+.reco2-stage .canvas-wrap{margin-top:0;max-width:100%}
+.reco2-stage .preview{margin-top:0;max-height:440px;max-width:100%}
+.reco2-actions{display:flex;gap:12px;margin-top:16px}
+.reco2-actions .btn{flex:1;letter-spacing:4px}
+.reco2-right{border:1px solid var(--line);border-radius:6px;padding:20px 22px;min-height:400px}
+.reco2-rhead{font-family:var(--serif);font-size:19px;font-weight:500}
+.reco2-rhead span{color:var(--muted);font-size:13px;font-family:var(--sans)}
+.reco2-right .reco-meta{margin:6px 0 0}
+.reco-list{margin-top:14px;display:flex;flex-direction:column;gap:14px}
+.reco-item{display:flex;gap:14px;align-items:flex-start;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.reco-item:last-child{border-bottom:0;padding-bottom:0}
+.ri-emoji{width:50px;height:50px;flex:none;background:var(--bg2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:28px}
+.ri-main{flex:1;min-width:0}
+.ri-name{font-size:14.5px;font-weight:500;display:flex;justify-content:space-between;gap:10px}
+.ri-pct{color:var(--accent);font-weight:600;flex:none}
+.bar-track{height:6px;background:var(--line);border-radius:3px;margin:8px 0;overflow:hidden}
+.bar-track .bar{height:100%;background:var(--accent);border-radius:3px;transition:width .4s}
+.ri-buy{display:flex;align-items:center;gap:12px;margin-top:8px}
+.ri-price{color:var(--accent);font-weight:600;font-size:15px}
+.ri-price small{font-size:11px}
+.ri-link{font-size:13px;color:var(--muted);border-bottom:1px solid var(--line)}
+.ri-link:hover{color:var(--accent);border-color:var(--accent)}
+.ri-add{margin-left:auto;border:1px solid var(--ink);background:var(--bg);color:var(--ink);border-radius:2px;padding:6px 14px;font-size:12.5px;cursor:pointer;transition:.15s}
+.ri-add:hover{background:var(--ink);color:#fff}
+.reco-empty2{color:var(--muted);text-align:center;padding:70px 10px;font-size:13.5px}
+.reco-empty2 svg{width:52px;height:52px;stroke:#d4cdc2;stroke-width:1.2;fill:none;margin:0 auto 14px}
+@media(max-width:860px){.reco2{grid-template-columns:1fr}}

@@ -29,11 +29,30 @@ spring:
             - Path=/order/**
           filters:
             - Time=true
+        # 下单 / 我的订单（受保护：非公开前缀，需携带有效 JWT）
+        - id: shop-orders-crud
+          uri: lb://shop-order-service
+          predicates:
+            - Path=/orders/**
         # 用户服务路由：登录/注册（公开接口，AuthGlobalFilter 已放行 /user/**）
         - id: shop-user-service
           uri: lb://shop-user-service
           predicates:
             - Path=/user/**
+        # 商品识别：图片上传走应用层（商品服务），由其转发给算法层 AI 服务
+        - id: reco-via-product
+          uri: lb://shop-product-service
+          predicates:
+            - Path=/reco/**
+          filters:
+            - StripPrefix=1
+      # 浏览器跨域调网关（前端 :8088 → 网关 :9000）放行 CORS
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: "*"
+            allowed-methods: "*"
+            allowed-headers: "*"
     # Day04 7.9 网关集成 Sentinel 限流（transport 端口与 Sentinel 控制台地址）
     sentinel:
       transport:
