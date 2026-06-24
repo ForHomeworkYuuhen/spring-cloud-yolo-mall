@@ -26,9 +26,11 @@
 </div></header>
 
 <div class="searchbar"><div class="wrap">
-  <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
-  <input id="kw" placeholder="搜索商品、品牌或店铺" onkeydown="if(event.key==='Enter')doSearch()">
-  <span class="kbd">回车搜索</span>
+  <div class="searchbox">
+    <svg class="s-ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+    <input id="kw" placeholder="搜索商品、品牌或店铺" onkeydown="if(event.key==='Enter')doSearch()">
+    <button class="s-btn" type="button" onclick="doSearch()">搜索</button>
+  </div>
 </div></div>
 
 <div class="wrap">

@@ -21,7 +21,7 @@ services:
       TZ: Asia/Shanghai
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
     ports:
-      - "3306:3306"
+      - "3307:3306"   # 主机用 3307（避开其他项目占用的 3306）；容器间仍走内部 mysql:3306
     volumes:
       - ./sql:/docker-entrypoint-initdb.d:ro      # 首次启动自动建库建表
       - shop-mysql-data:/var/lib/mysql
@@ -147,6 +147,7 @@ services:
       - "8088:80"
     volumes:
       - ./shop-frontend:/usr/share/nginx/html:ro
+      - ./nginx-no-cache.conf:/etc/nginx/conf.d/default.conf:ro   # 禁缓存，改了刷新即生效
 
 volumes:
   shop-mysql-data:
