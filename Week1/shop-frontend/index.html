@@ -80,6 +80,7 @@ function doSearch(){
   document.getElementById('all').scrollIntoView({ behavior:'smooth' });
 }
 (async function(){
+  sessionStorage.removeItem('reco_state');   // 回到首页则清空识别结果缓存
   renderUser();
   ALL = await fetchProducts();
   const recs = await fetchRecommend(currentUser(), ALL, 4);

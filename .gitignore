@@ -32,3 +32,5 @@ Thumbs.db
 
 .llm_key
 **/.llm_key
+
+!recommend/model/din.pt

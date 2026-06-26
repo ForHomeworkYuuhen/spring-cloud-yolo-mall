@@ -90,6 +90,31 @@ const rcount = document.getElementById('rcount'), resmeta = document.getElementB
 let imgFile = null, currentModel = FALLBACK_MODELS[0].value, modelLabels = {}, lastRender = null;
 const PROD_BY_NAME = Object.fromEntries((typeof MOCK !== 'undefined' ? MOCK : []).map(p => [p.name, p]));
 
+// 识别结果会话内持久化：从详情页返回时恢复，回到首页则清空
+function dataURLtoFile(durl, name){
+  const [meta, b64] = durl.split(',');
+  const mime = (meta.match(/:(.*?);/) || [, 'image/jpeg'])[1];
+  const bin = atob(b64), u8 = new Uint8Array(bin.length);
+  for(let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  return new File([u8], name, { type: mime });
+}
+function saveState(data){
+  if(!imgFile) return;
+  const r = new FileReader();
+  r.onload = () => { try { sessionStorage.setItem('reco_state', JSON.stringify({ img: r.result, model: currentModel, data })); } catch(e){} };
+  r.readAsDataURL(imgFile);
+}
+function restoreState(){
+  let s; try { s = JSON.parse(sessionStorage.getItem('reco_state') || 'null'); } catch(e){ s = null; }
+  if(!s || !s.img) return;
+  currentModel = s.model || currentModel;
+  modelPick.querySelectorAll('.seg').forEach(b => b.classList.toggle('on', b.dataset.val === currentModel));
+  imgFile = dataURLtoFile(s.img, 'restored.jpg');
+  drop.style.display = 'none'; canvasWrap.style.display = 'inline-block'; reupload.style.display = ''; btn.disabled = false;
+  preview.onload = () => { render(s.data); };
+  preview.src = s.img;
+}
+
 // ---- 模型选择器 ----
 async function loadModels(){
   let models = null;
@@ -117,7 +142,7 @@ async function loadModels(){
     };
   });
 }
-loadModels();
+loadModels().then(restoreState);
 
 // ---- 选图 ----
 let _picking = false;
@@ -195,6 +220,7 @@ function render(data){
         </div>
       </div>`;
   }).join('');
+  saveState(data);
 }
 
 // ---- canvas 叠加画框 ----

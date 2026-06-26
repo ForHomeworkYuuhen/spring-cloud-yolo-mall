@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>热门推荐 · 推荐测试 — 粤海购</title>
+<title>个性化推荐测试 · DIN — 粤海购</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
 <div class="topbar"><div class="wrap">
   <div id="userArea">请 <a class="hi" href="login.html">登录</a> / <a href="login.html">注册</a></div>
-  <div><a href="reco-test.html">热门推荐</a><a href="orders.html">我的订单</a><a href="cart.html">购物车</a></div>
+  <div><a href="reco-test.html">推荐测试</a><a href="orders.html">我的订单</a><a href="cart.html">购物车</a></div>
 </div></div>
 
 <header class="header"><div class="wrap">
@@ -21,55 +21,64 @@
 <div class="wrap">
   <a class="back" href="index.html">← 返回首页</a>
   <section class="sec" style="margin-top:8px">
-    <div class="eyebrow">RECOMMENDATION TEST</div>
-    <h2>热门推荐 · 推荐测试</h2>
-    <div class="note">随机抽取一位真实用户，根据其历史行为偏好，为他推荐本店零食。每次抽取的用户不同，推荐结果也不同——这就是“千人千面”。</div>
+    <div class="eyebrow">DIN RECOMMENDATION</div>
+    <h2>个性化推荐测试<span class="din-badge">DIN 深度兴趣网络</span></h2>
+    <div class="note">从天池移动推荐数据集中随机抽取一位真实用户，用 DIN 模型读取其购买前的行为序列，通过注意力机制预测并推荐其最可能购买的商品（数据集真实商品）。每次抽取的用户不同，推荐也不同——千人千面。模型验证集 AUC≈0.73。</div>
   </section>
 
   <div class="test-actions">
-    <button class="btn" id="pick" onclick="pickUser()">随机抽取一位用户并推荐</button>
+    <button class="btn" id="pick" onclick="pickUser()" style="width:auto;padding:0 26px">随机抽取一位用户并推荐</button>
     <span class="test-hint" id="hint"></span>
   </div>
 
   <div id="userBox"></div>
-  <div class="grid" id="recoGrid" style="margin-top:8px"></div>
+  <div id="recoBox"></div>
 </div>
 
 <footer>粤海购 · 广东海洋大学23级信管实训</footer>
 
 <script src="js/app.js"></script>
 <script>
-let CATALOG = [];
 async function pickUser(){
-  const hint = document.getElementById('hint');
-  const btn = document.getElementById('pick');
-  hint.textContent = '抽取中…'; btn.disabled = true;
+  const hint = document.getElementById('hint'), btn = document.getElementById('pick');
+  hint.textContent = 'DIN 推理中…'; btn.disabled = true;
+  document.getElementById('recoBox').innerHTML = '';
   try {
-    const r = await fetch(`${REC_API}/demo?n=8`, { signal: AbortSignal.timeout(4000) });
+    const r = await fetch(`${REC_API}/recommend/test?n=8`, { signal: AbortSignal.timeout(30000) });
     if(!r.ok) throw 0;
-    renderResult(await r.json());
+    render(await r.json());
     hint.textContent = '';
   } catch(e){
-    hint.textContent = '推荐服务(:8124)未启动，无法获取真实用户数据。';
-  } finally {
-    btn.disabled = false;
-  }
+    hint.textContent = '推荐服务(:8124)未启动或模型未训练，无法获取数据。';
+    document.getElementById('userBox').innerHTML = '';
+  } finally { btn.disabled = false; }
 }
-function renderResult(d){
-  const byId = Object.fromEntries(CATALOG.map(p => [p.id, p]));
-  const recs = (d.item_ids || []).map(id => byId[id]).filter(Boolean);
+
+function render(d){
+  const hist = (d.history || []).map(h =>
+    `<span class="ds-chip">商品 #${h.item}<small>类目 ${h.category}</small></span>`).join('') || '<span style="color:#999">（无历史）</span>';
   document.getElementById('userBox').innerHTML =
     `<div class="test-user">
-       <div class="tu-id">用户 <b>#${d.user_id}</b></div>
-       <div class="tu-meta">历史行为覆盖 ${d.profile_categories || 0} 个商品类目 · 依据该用户真实的浏览 / 收藏 / 加购 / 购买偏好推荐</div>
+       <div class="tu-id">数据集用户 <b>#${d.user_id}</b></div>
+       <div class="tu-meta">该用户购买前的历史行为（浏览 / 收藏 / 加购）——DIN 的输入序列：</div>
+       <div class="ds-hist">${hist}</div>
      </div>`;
-  document.getElementById('recoGrid').innerHTML = recs.map(cardHTML).join('');
+  const recs = (d.recommendations || []).map((rc, i) => {
+    const pct = (rc.score * 100).toFixed(1);
+    return `<div class="ds-card">
+        <div class="ds-rank">Top ${i + 1}</div>
+        <div class="ds-item">商品 #${rc.item}</div>
+        <div class="ds-cat">类目 ${rc.category}</div>
+        <div class="ds-score">购买概率 ${pct}%</div>
+        <div class="bar-track"><div class="bar" style="width:${pct}%"></div></div>
+      </div>`;
+  }).join('');
+  document.getElementById('recoBox').innerHTML =
+    `<div class="sec-title" style="margin:22px 0 4px">DIN 为该用户推荐的商品</div>
+     <div class="ds-grid">${recs}</div>`;
 }
-(async function(){
-  renderUser();
-  CATALOG = await fetchProducts();
-  pickUser();
-})();
+
+(async function(){ renderUser(); pickUser(); })();
 </script>
 </body>
 </html>
